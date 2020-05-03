@@ -1,0 +1,52 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        applicationId "com.github.kevin.optimize"
+        minSdkVersion 21
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+        //第一层：SVG优化
+        vectorDrawables.generatedDensities('xhdpi','xxhdpi') //将svg图片生成指定维度的png图片
+        vectorDrawables.useSupportLibrary = true //使用support-v7兼容
+        //第三层：配置打包资源，只保留指定和默认的国际化资源
+        resConfigs('zh-rCN','ko')
+        //第四层：动态库打包配置，配置so库架构（真机arm,模拟器x86）
+        ndk {
+            abiFilters('armeabi','armeabi-v7a')
+        }
+
+    }
+    buildTypes {
+        release {
+            zipAlignEnabled true
+            shrinkResources true
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            //Zipalign优化，帮助操作系统更高效率的根据请求索引资源
+            zipAlignEnabled true
+            //第六层：启动资源压缩，移除无用的resource文件(不需要做物理上的资源删除)
+            shrinkResources true
+            //第七层：开启代码压缩，源代码混淆（shrinkResources依赖于minifyEnabled，必须一起同步使用，即要么都是true要么都是false）
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    //将so库打包到apk内
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.support:appcompat-v7:28.0.0' //大量的国际化资源来自v7包
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+}
